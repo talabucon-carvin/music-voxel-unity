@@ -4,57 +4,78 @@ using UnityEngine.InputSystem;
 public class VoxelPlacer : MonoBehaviour
 {
     [Header("References")]
-    public Camera playerCamera;          // Player camera
-    public GameObject blockTemplate;     // Generic cube prefab
-    public BlockData blockToPlace;       // The type of block to place
-    public Transform worldParent;        // Usually SimpleVoxelWorld.transform
+    public Camera playerCamera;
+    public GameObject blockTemplate;
+    public BlockData blockToPlace;
+    public Transform worldParent;
+
+    [Header("Crosshair Settings")]
+    public Crosshair crosshair;          // your Crosshair script
+    public LineRenderer lineRenderer;
 
     [Header("Placement Settings")]
     public float maxRayDistance = 10f;
+    public LayerMask placementMask;      // Layer(s) to hit, ignore player layer
 
     void Update()
     {
         if (playerCamera == null || blockTemplate == null || blockToPlace == null) return;
 
-        // Raycast from center of screen (crosshair)
-        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        // Get crosshair screen position
+        Vector2 crosshairScreenPos = crosshair != null
+            ? crosshair.GetCrosshairScreenPos()
+            : new Vector2(Screen.width / 2f, Screen.height / 2f);
+        // Create ray from camera through crosshair
+        Ray ray = playerCamera.ScreenPointToRay(crosshairScreenPos);
+        RaycastHit hit;
+        Vector3 endPoint = ray.origin + ray.direction * maxRayDistance;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance))
+        // Raycast using LayerMask
+        if (Physics.Raycast(ray, out hit, maxRayDistance, placementMask))
         {
-            Debug.DrawLine(ray.origin, hit.point, Color.red);
+            endPoint = hit.point;
 
-            Vector3 spawnPos = hit.collider.transform.position + hit.normal;
+            // Optional debug log
+            Debug.Log("Raycast hit: " + hit.collider.name);
+
+            // Calculate block spawn position (snap to grid)
+            Vector3 spawnPos = hit.point + hit.normal * 0.5f;
             spawnPos = new Vector3(
                 Mathf.Round(spawnPos.x),
                 Mathf.Round(spawnPos.y),
                 Mathf.Round(spawnPos.z)
             );
 
-            // Place block when left mouse button is pressed (modern Input System)
+            // Debug visualization in Scene view
+            Debug.DrawLine(spawnPos - Vector3.one * 0.5f, spawnPos + Vector3.one * 0.5f, Color.yellow);
+            Debug.DrawRay(hit.point, hit.normal * 0.5f, Color.blue);
+
+            // Place block on left click
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
-                if (!Physics.CheckBox(spawnPos, Vector3.one * 0.45f))
+                if (!Physics.CheckBox(spawnPos, Vector3.one * 0.45f, Quaternion.identity, placementMask))
                 {
                     GameObject newBlock = Instantiate(blockTemplate, spawnPos, Quaternion.identity, worldParent);
 
                     // Assign BlockData
                     Block blockComp = newBlock.GetComponent<Block>();
-                    if (blockComp != null)
-                        blockComp.data = blockToPlace;
+                    if (blockComp != null) blockComp.data = blockToPlace;
 
                     // Assign material
                     if (blockToPlace.material != null)
                     {
                         MeshRenderer renderer = newBlock.GetComponent<MeshRenderer>();
-                        if (renderer != null)
-                            renderer.material = blockToPlace.material;
+                        if (renderer != null) renderer.material = blockToPlace.material;
                     }
                 }
             }
         }
-        else
+
+        // Update LineRenderer for Game view
+        if (lineRenderer != null)
         {
-            Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.green);
+            lineRenderer.SetPosition(0, ray.origin);
+            lineRenderer.SetPosition(1, endPoint);
         }
     }
 }
