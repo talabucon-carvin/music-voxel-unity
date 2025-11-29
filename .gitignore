@@ -1,0 +1,33 @@
+# Unity auto-generated folders
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
+
+# Builds
+Build/
+Builds/
+
+# Cache
+MemoryCaptures/
+Artifacts/
+
+# Visual Studio / JetBrains Rider
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Backup files
+*.orig
+
+# OS-specific
+.DS_Store
+Thumbs.db
