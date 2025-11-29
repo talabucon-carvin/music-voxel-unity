@@ -1,69 +1,43 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // Required for new Input System
+using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody))]
-public class PlayerControllerNewInput : MonoBehaviour
+public class ThirdPersonMovement : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float jumpForce = 5f;
+    [Header("Movement")]
+    public float speed = 5f;
+    public Transform cameraTransform;  // drag Main Camera here
 
-    private Rigidbody rb;
-    private bool isGrounded;
-
-    private PlayerControls controls;
     private Vector2 moveInput;
-    private bool jumpInput;
+    private PlayerControls controls;
 
-    private void Awake()
+    void Awake()
     {
-        rb = GetComponent<Rigidbody>();
         controls = new PlayerControls();
+        controls.Player.Enable();
 
-        // Move callback
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        // Jump callback
-        controls.Player.Jump.performed += ctx => jumpInput = true;
     }
 
-    private void OnEnable()
+    void Update()
     {
-        controls.Enable();
-    }
+        // Convert input to world movement relative to camera
+        Vector3 forward = cameraTransform.forward;
+        forward.y = 0;
+        forward.Normalize();
 
-    private void OnDisable()
-    {
-        controls.Disable();
-    }
+        Vector3 right = cameraTransform.right;
+        right.y = 0;
+        right.Normalize();
 
-    private void FixedUpdate()
-    {
-        // WASD / Left Stick movement
-        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-        Vector3 velocity = move * moveSpeed;
-        velocity.y = rb.linearVelocity.y; // preserve vertical velocity
-        rb.linearVelocity = velocity;
+        Vector3 move = forward * moveInput.y + right * moveInput.x;
 
-        // Jump
-        if (jumpInput && isGrounded)
+        if (move.sqrMagnitude > 0.01f)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            jumpInput = false;
-        }
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        // Simple grounded check
-        isGrounded = false;
-        foreach (ContactPoint contact in collision.contacts)
-        {
-            if (Vector3.Dot(contact.normal, Vector3.up) > 0.5f)
-            {
-                isGrounded = true;
-                break;
-            }
+            // rotate player toward movement
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(move), 0.15f);
+            // move player
+            transform.position += move * speed * Time.deltaTime;
         }
     }
 }
