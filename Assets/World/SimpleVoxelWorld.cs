@@ -6,8 +6,9 @@ using UnityEditor;
 
 public class SimpleVoxelWorld : MonoBehaviour
 {
-    [Header("Block Prefab")]
-    public GameObject bedrockPrefab;
+    [Header("Block Template & Data")]
+    public GameObject blockTemplate;  // generic cube with Block.cs
+    public BlockData bedrockData;     // ScriptableObject for bedrock
 
     [Header("World Dimensions")]
     public int width = 10;
@@ -35,12 +36,26 @@ public class SimpleVoxelWorld : MonoBehaviour
     {
         ClearPreviousBlocks();
 
+        if (blockTemplate == null || bedrockData == null)
+        {
+            Debug.LogWarning("Block template or bedrock data is missing!");
+            return;
+        }
+
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < depth; z++)
             {
-                if (bedrockPrefab)
-                    Instantiate(bedrockPrefab, new Vector3(x, 0, z), Quaternion.identity, transform);
+                GameObject block = Instantiate(blockTemplate, new Vector3(x, 0, z), Quaternion.identity, transform);
+
+                // Assign BlockData
+                Block blockComp = block.GetComponent<Block>();
+                if (blockComp != null)
+                    blockComp.data = bedrockData;
+
+                // Assign material
+                if (bedrockData.material != null)
+                    block.GetComponent<MeshRenderer>().material = bedrockData.material;
             }
         }
     }

@@ -1,0 +1,11 @@
+{
+    "asset": "a41f7af6cdfd08049ad01978e74c1ad3",
+    "fileName": "019acfcc-6a1d-7f37-8fb2-189ce6a7c36f_Preview.png",
+    "prompt": "bedrock",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 662667604,
+    "w3CTraceId": "7d97b810734cd734ec40e98b2a6a0871",
+    "refinementMode": "Generation"
+}
