@@ -9,7 +9,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
     private Vector2 moveInput;
     private PlayerControls controls;
-
+    public Vector2 MoveInput => moveInput;  // expose current move vector
     void Awake()
     {
         controls = new PlayerControls();

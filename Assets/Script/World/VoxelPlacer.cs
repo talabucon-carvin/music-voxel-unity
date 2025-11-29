@@ -1,16 +1,16 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class VoxelPlacer : MonoBehaviour
 {
     [Header("References")]
     public Camera playerCamera;          // Player camera
-    public GameObject blockTemplate;     // Your generic Block prefab
-    public BlockData blockToPlace;       // The type of block the player is placing
-    public Transform worldParent;        // Usually the SimpleVoxelWorld.transform
+    public GameObject blockTemplate;     // Generic cube prefab
+    public BlockData blockToPlace;       // The type of block to place
+    public Transform worldParent;        // Usually SimpleVoxelWorld.transform
 
     [Header("Placement Settings")]
     public float maxRayDistance = 10f;
-    public KeyCode placeKey = KeyCode.Mouse0;
 
     void Update()
     {
@@ -21,10 +21,8 @@ public class VoxelPlacer : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance))
         {
-            // Draw red line to show the ray hitting a block
             Debug.DrawLine(ray.origin, hit.point, Color.red);
 
-            // Calculate spawn position based on hit normal, snapped to integer grid
             Vector3 spawnPos = hit.collider.transform.position + hit.normal;
             spawnPos = new Vector3(
                 Mathf.Round(spawnPos.x),
@@ -32,21 +30,19 @@ public class VoxelPlacer : MonoBehaviour
                 Mathf.Round(spawnPos.z)
             );
 
-            // Place block on left click
-            if (Input.GetKeyDown(placeKey))
+            // Place block when left mouse button is pressed (modern Input System)
+            if (Mouse.current.leftButton.wasPressedThisFrame)
             {
-                // Prevent placing inside an existing block
                 if (!Physics.CheckBox(spawnPos, Vector3.one * 0.45f))
                 {
-                    // Instantiate template
                     GameObject newBlock = Instantiate(blockTemplate, spawnPos, Quaternion.identity, worldParent);
 
-                    // Assign the BlockData to this instance
+                    // Assign BlockData
                     Block blockComp = newBlock.GetComponent<Block>();
                     if (blockComp != null)
                         blockComp.data = blockToPlace;
 
-                    // Apply material if defined in BlockData
+                    // Assign material
                     if (blockToPlace.material != null)
                     {
                         MeshRenderer renderer = newBlock.GetComponent<MeshRenderer>();
@@ -58,7 +54,6 @@ public class VoxelPlacer : MonoBehaviour
         }
         else
         {
-            // Draw green line if ray hits nothing
             Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.green);
         }
     }

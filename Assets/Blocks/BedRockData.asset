@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BedRockData
   m_EditorClassIdentifier: Assembly-CSharp::BlockData
   blockName: Bedrock
-  material: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  material: {fileID: 2100000, guid: a41f7af6cdfd08049ad01978e74c1ad3, type: 2}
   isBreakable: 0
   hardness: 99999
   lightEmission: 0
