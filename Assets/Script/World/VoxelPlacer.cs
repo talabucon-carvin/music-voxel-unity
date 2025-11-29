@@ -69,6 +69,17 @@ public class VoxelPlacer : MonoBehaviour
                     }
                 }
             }
+            if (Mouse.current.rightButton.wasPressedThisFrame)
+            {
+                // Directly delete the hit object IF it is a block
+                Block block = hit.collider.GetComponent<Block>();
+                if (block != null)
+                {
+                    Destroy(block.gameObject);
+                    return; // prevent placing & deleting at the same frame
+                }
+            }
+
         }
 
         // Update LineRenderer for Game view
