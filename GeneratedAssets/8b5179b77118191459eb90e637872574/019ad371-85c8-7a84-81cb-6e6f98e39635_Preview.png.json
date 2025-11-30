@@ -1,0 +1,11 @@
+{
+    "asset": "858d7445791d34a428e6fb0f541d00c2",
+    "fileName": "019ad371-85c8-7a84-81cb-6e6f98e39635_Preview.png",
+    "prompt": "A material for a cube where each of the 6 faces has a music note icon",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 20610772,
+    "w3CTraceId": "074f58e8c31c47a91aecb2b51123f24a",
+    "refinementMode": "Generation"
+}

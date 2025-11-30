@@ -1,0 +1,11 @@
+{
+    "asset": "f65129b1f4b4fc948ac1de382760e8bb",
+    "fileName": "019ad36d-dec6-7254-b62e-b19fbd0019f2_Preview.png",
+    "prompt": "music",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 985521146,
+    "w3CTraceId": "eff2dcf48608aef118931f599b49b75f",
+    "refinementMode": "Generation"
+}
