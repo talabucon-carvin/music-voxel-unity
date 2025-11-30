@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PianoInstrumentBlockData
   m_EditorClassIdentifier: Assembly-CSharp::InstrumentBlockData
   blockName: PianoBlock
-  material: {fileID: 0}
+  material: {fileID: 2100000, guid: df6ea37ec4fb48d41aed97943ceac69b, type: 2}
   isBreakable: 1
   hardness: 1
   lightEmission: 0
