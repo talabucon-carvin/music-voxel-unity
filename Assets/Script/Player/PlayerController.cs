@@ -1,15 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     public float speed = 5f;
-    public Transform cameraTransform;  // drag Main Camera here
+    public float jumpHeight = 2f;
+    public float gravity = -9.81f;
+    public Transform cameraTransform;
 
     private Vector2 moveInput;
     private PlayerControls controls;
-    public Vector2 MoveInput => moveInput;  // expose current move vector
+
+    private CharacterController controller;
+    private Vector3 velocity;  // tracks vertical velocity
+    private bool isGrounded;
+
+    public Vector2 MoveInput => moveInput;
+
     void Awake()
     {
         controls = new PlayerControls();
@@ -17,11 +26,25 @@ public class PlayerController : MonoBehaviour
 
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
+
+        controls.Player.Jump.performed += ctx => Jump();
+    }
+
+    void Start()
+    {
+        controller = GetComponent<CharacterController>();
     }
 
     void Update()
     {
-        // Convert input to world movement relative to camera
+        // Ground check
+        isGrounded = controller.isGrounded;
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f; // small downward force to stick to ground
+        }
+
+        // Movement
         Vector3 forward = cameraTransform.forward;
         forward.y = 0;
         forward.Normalize();
@@ -36,8 +59,20 @@ public class PlayerController : MonoBehaviour
         {
             // rotate player toward movement
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(move), 0.15f);
-            // move player
-            transform.position += move * speed * Time.deltaTime;
+        }
+
+        controller.Move(move * speed * Time.deltaTime);
+
+        // Apply gravity
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    void Jump()
+    {
+        if (isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
 }
