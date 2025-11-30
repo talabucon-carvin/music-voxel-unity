@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8263527380567450438}
   - component: {fileID: 2153961035702718119}
   - component: {fileID: 4915108183093106378}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PitchTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}

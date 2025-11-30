@@ -1,8 +1,10 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Voxel/Instrument Block Data")]
+[CreateAssetMenu(menuName = "Voxel/Blocks/Instrument Block Data")]
 public class InstrumentBlockData : BlockData
 {
-    public string instrumentName;
-    public AudioClip[] noteClips; // Map pitch index -> audio clip
+    // The base audio sample (usually Middle C)
+    public AudioClip baseNote;
+
+    // Optional: volume, ADSR, etc later
 }

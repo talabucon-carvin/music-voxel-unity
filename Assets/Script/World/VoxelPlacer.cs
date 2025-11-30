@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 
 public class VoxelPlacer : MonoBehaviour
 {
@@ -11,17 +10,14 @@ public class VoxelPlacer : MonoBehaviour
     public LineRenderer lineRenderer;
 
     [Header("Block Options")]
-    public BlockData[] blockOptions;     // 0 = platform, 1 = music
-    public GameObject[] blockPrefabs;    // same order as blockOptions
+    public BlockData[] blockOptions;     // 0 = platform, 1 = piano instrument, 2 = pitch C, etc.
+    public GameObject[] blockPrefabs;    // MUST match order
     private int selectedBlockIndex = 0;
     private BlockData blockToPlace;
 
     [Header("Placement Settings")]
     public float maxRayDistance = 10f;
     public LayerMask placementMask;
-
-    // Music block dictionary for vertical stack lookup
-    public Dictionary<Vector3Int, MusicBlock> musicGrid = new Dictionary<Vector3Int, MusicBlock>();
 
     void Update()
     {
@@ -45,12 +41,16 @@ public class VoxelPlacer : MonoBehaviour
             }
         }
 
-        if (blockToPlace == null) blockToPlace = blockOptions[selectedBlockIndex];
+        if (blockToPlace == null)
+            blockToPlace = blockOptions[selectedBlockIndex];
     }
 
     void HandlePlacement()
     {
-        Vector2 crossPos = crosshair != null ? crosshair.GetCrosshairScreenPos() : new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Vector2 crossPos = crosshair != null
+            ? crosshair.GetCrosshairScreenPos()
+            : new Vector2(Screen.width / 2f, Screen.height / 2f);
+
         Ray ray = playerCamera.ScreenPointToRay(crossPos);
         RaycastHit hit;
         Vector3 endPoint = ray.origin + ray.direction * maxRayDistance;
@@ -58,12 +58,17 @@ public class VoxelPlacer : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxRayDistance, placementMask))
         {
             endPoint = hit.point;
+
             Vector3 spawnPos = hit.point + hit.normal * 0.5f;
-            spawnPos = new Vector3(Mathf.Round(spawnPos.x), Mathf.Round(spawnPos.y), Mathf.Round(spawnPos.z));
+            spawnPos = new Vector3(
+                Mathf.Round(spawnPos.x),
+                Mathf.Round(spawnPos.y),
+                Mathf.Round(spawnPos.z)
+            );
 
             Debug.DrawLine(spawnPos - Vector3.one * 0.5f, spawnPos + Vector3.one * 0.5f, Color.yellow);
 
-            // Place
+            // PLACE BLOCK
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
                 if (!Physics.CheckBox(spawnPos, Vector3.one * 0.45f, Quaternion.identity, placementMask))
@@ -71,50 +76,34 @@ public class VoxelPlacer : MonoBehaviour
                     GameObject prefabToSpawn = blockPrefabs[selectedBlockIndex];
                     GameObject newBlock = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity, worldParent);
 
-                    // Assign data
-                    MusicBlock musicComp = newBlock.GetComponent<MusicBlock>();
-                    if (musicComp != null)
-                    {
-                        musicComp.data = (MusicBlockData)blockToPlace;
-                        Vector3Int gridPos = Vector3Int.RoundToInt(spawnPos);
-                        musicGrid[gridPos] = musicComp;
-                    }
-                    else
-                    {
-                        Block blockComp = newBlock.GetComponent<Block>();
-                        if (blockComp != null) blockComp.data = blockToPlace;
-                    }
+                    // Assign correct BlockData
+                    Block blockComp = newBlock.GetComponent<Block>();
+                    if (blockComp != null)
+                        blockComp.data = blockToPlace;
 
                     // Apply material
-                    MeshRenderer rend = newBlock.GetComponent<MeshRenderer>();
-                    if (rend != null && blockToPlace.material != null)
-                        rend.material = blockToPlace.material;
+                    if (blockToPlace.material != null)
+                    {
+                        MeshRenderer rend = newBlock.GetComponent<MeshRenderer>();
+                        if (rend != null)
+                            rend.material = blockToPlace.material;
+                    }
                 }
             }
 
-            // Delete
+            // DELETE BLOCK
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Block baseBlock = hit.collider.GetComponent<Block>();
-                MusicBlock musicBlock = hit.collider.GetComponent<MusicBlock>();
-
-                if (musicBlock != null)
+                Block hitBlock = hit.collider.GetComponent<Block>();
+                if (hitBlock != null)
                 {
-                    Vector3Int gridPos = Vector3Int.RoundToInt(musicBlock.transform.position);
-                    musicGrid.Remove(gridPos);
-                    Destroy(musicBlock.gameObject);
-                    return;
-                }
-
-                if (baseBlock != null)
-                {
-                    Destroy(baseBlock.gameObject);
+                    Destroy(hitBlock.gameObject);
                     return;
                 }
             }
         }
 
-        // LineRenderer for debug
+        // LineRenderer (debug)
         if (lineRenderer != null)
         {
             lineRenderer.SetPosition(0, ray.origin);

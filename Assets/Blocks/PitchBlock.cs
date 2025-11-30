@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PitchBlock : MonoBehaviour
+public class PitchBlock : Block
 {
-    public PitchBlockData data;
+    public PitchBlockData pitchData => (PitchBlockData)data;
 }

@@ -1,15 +1,29 @@
 using UnityEngine;
 
-// Top block in stack
-public class InstrumentBlock : MonoBehaviour
+public class InstrumentBlock : Block
 {
-    public InstrumentBlockData data;
+    public InstrumentBlockData instrumentData;
 
-    // You can later trigger notes for this instrument
-    public AudioClip GetNoteClip(int pitchIndex)
+    [HideInInspector]
+    public AudioSource audioSource;
+
+    void Awake()
     {
-        if (data == null || data.noteClips == null || pitchIndex < 0 || pitchIndex >= data.noteClips.Length)
-            return null;
-        return data.noteClips[pitchIndex];
+        // Add an AudioSource to this block, so it can play sound
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f;  // 3D sound
+        audioSource.playOnAwake = false;
+    }
+
+    public void PlayNote(float pitchMultiplier)
+    {
+        if (instrumentData == null || instrumentData.baseNote == null)
+        {
+            Debug.LogWarning("InstrumentBlock missing audio data!");
+            return;
+        }
+
+        audioSource.pitch = pitchMultiplier;
+        audioSource.PlayOneShot(instrumentData.baseNote);
     }
 }
