@@ -29,21 +29,47 @@ public class VoxelPlacer : MonoBehaviour
 
     void HandleHotkeys()
     {
-        int maxKeys = Mathf.Min(10, blockOptions.Length);
-
-        for (int i = 0; i < maxKeys; i++)
+        // ` (BACKQUOTE) — PLATFORM
+        if (Keyboard.current.backquoteKey.wasPressedThisFrame)
         {
-            if (Keyboard.current[i + Key.Digit1].wasPressedThisFrame)
-            {
-                selectedBlockIndex = i;
-                blockToPlace = blockOptions[selectedBlockIndex];
-                Debug.Log("Selected block: " + blockToPlace.blockName);
-            }
+            SelectBlock(0);
         }
+
+        // 1–0 = 10 keys pitch C to pitch A
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) SelectBlock(1);
+        if (Keyboard.current.digit2Key.wasPressedThisFrame) SelectBlock(2);
+        if (Keyboard.current.digit3Key.wasPressedThisFrame) SelectBlock(3);
+        if (Keyboard.current.digit4Key.wasPressedThisFrame) SelectBlock(4);
+        if (Keyboard.current.digit5Key.wasPressedThisFrame) SelectBlock(5);
+        if (Keyboard.current.digit6Key.wasPressedThisFrame) SelectBlock(6);
+        if (Keyboard.current.digit7Key.wasPressedThisFrame) SelectBlock(7);
+        if (Keyboard.current.digit8Key.wasPressedThisFrame) SelectBlock(8);
+        if (Keyboard.current.digit9Key.wasPressedThisFrame) SelectBlock(9);
+        if (Keyboard.current.digit0Key.wasPressedThisFrame) SelectBlock(10);
+
+        // - (minus) and = (equals) pitch A# and pitch B
+        if (Keyboard.current.minusKey.wasPressedThisFrame) SelectBlock(11);
+        if (Keyboard.current.equalsKey.wasPressedThisFrame) SelectBlock(12);
+
+        // I key INSTRUMENT BLOCK
+        if (Keyboard.current.iKey.wasPressedThisFrame) SelectBlock(13);
 
         if (blockToPlace == null)
             blockToPlace = blockOptions[selectedBlockIndex];
     }
+
+    void SelectBlock(int index)
+    {
+        if (index < 0 || index >= blockOptions.Length)
+            return;
+
+        selectedBlockIndex = index;
+        blockToPlace = blockOptions[index];
+
+        Debug.Log("Selected block: " + blockToPlace.blockName);
+    }
+
+
 
     void HandlePlacement()
     {

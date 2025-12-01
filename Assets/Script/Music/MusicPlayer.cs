@@ -56,14 +56,14 @@ public class MusicNotePlayer : MonoBehaviour
 
     void TryPlayPitch(PitchBlock pitch)
     {
-        if (Physics.Raycast(pitch.transform.position, Vector3.down, out RaycastHit belowHit, 1f))
+        if (Physics.Raycast(pitch.transform.position, Vector3.down, out RaycastHit hit, 1f))
         {
-            if (belowHit.collider.TryGetComponent(out InstrumentBlock inst))
+            if (hit.collider.TryGetComponent(out InstrumentBlock inst))
             {
-                float pitchMult = Mathf.Pow(2f, pitch.pitchData.semitoneOffset / 12f);
-                audioSource.pitch = pitchMult;
+                audioSource.pitch = pitch.GetUnityPitch();
                 audioSource.PlayOneShot(inst.instrumentData.baseNote);
             }
         }
     }
+
 }
