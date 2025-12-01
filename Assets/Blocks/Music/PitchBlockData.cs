@@ -5,4 +5,6 @@ public class PitchBlockData : BlockData
 {
     [Header("Pitch offset from base note (0–11)")]
     public int semitoneOffset;
+
+    public AudioClip baseTone; // fallback tone
 }

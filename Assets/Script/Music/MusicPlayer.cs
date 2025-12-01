@@ -56,14 +56,30 @@ public class MusicNotePlayer : MonoBehaviour
 
     void TryPlayPitch(PitchBlock pitch)
     {
+        // First: check if there is an instrument below
         if (Physics.Raycast(pitch.transform.position, Vector3.down, out RaycastHit hit, 1f))
         {
             if (hit.collider.TryGetComponent(out InstrumentBlock inst))
             {
+                // Play instrument + pitch
                 audioSource.pitch = pitch.GetUnityPitch();
                 audioSource.PlayOneShot(inst.instrumentData.baseNote);
+                return;
             }
         }
+
+        // If no instrument: play default pitch tone
+        PlayPitchAlone(pitch);
     }
+
+    void PlayPitchAlone(PitchBlock pitch)
+    {
+        if (pitch.PitchData.baseTone == null)
+            return; // no sound assigned on pitch data
+
+        audioSource.pitch = pitch.GetUnityPitch();
+        audioSource.PlayOneShot(pitch.PitchData.baseTone);
+    }
+
 
 }

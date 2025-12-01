@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4466273757197842331}
   - component: {fileID: 2064227263906172823}
   - component: {fileID: 7418249043426793625}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: AbPitchBlock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,3 +125,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PitchBlock
   data: {fileID: 11400000, guid: dd5d0192628a4d040ae66ae7540a3269, type: 2}
+  octave: 0
