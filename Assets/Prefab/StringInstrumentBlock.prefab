@@ -124,6 +124,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e21ed1e6a40534ca5d192e6429000c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InstrumentBlock
-  data: {fileID: 11400000, guid: 929c0850a6820cd48b21ee1a2bd26a4e, type: 2}
-  instrumentData: {fileID: 11400000, guid: 929c0850a6820cd48b21ee1a2bd26a4e, type: 2}
+  data: {fileID: 11400000, guid: bc27fcc3e54b7f6429cee3ef48dd4293, type: 2}
+  instrumentData: {fileID: 11400000, guid: bc27fcc3e54b7f6429cee3ef48dd4293, type: 2}
   audioSource: {fileID: 0}
