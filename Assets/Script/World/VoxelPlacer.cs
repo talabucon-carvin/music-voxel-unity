@@ -19,9 +19,20 @@ public class VoxelPlacer : MonoBehaviour
     public float maxRayDistance = 10f;
     public LayerMask placementMask;
 
+    // Current selected pitch info (only used for pitch blocks)
+    private int selectedPitchIndex = -1; // 0-11 (C..B)
+    private int selectedOctave = 4;      // default
+
+
     void Update()
     {
         if (playerCamera == null || blockOptions.Length == 0 || blockPrefabs.Length == 0) return;
+
+        float scroll = Mouse.current.scroll.y.ReadValue();
+        if (scroll != 0 && selectedPitchIndex != -1)
+        {
+            AdjustOctave(scroll);
+        }
 
         HandleHotkeys();
         HandlePlacement();
@@ -66,6 +77,23 @@ public class VoxelPlacer : MonoBehaviour
         selectedBlockIndex = index;
         blockToPlace = blockOptions[index];
 
+        // Detect pitch blocks
+        if (blockToPlace is PitchBlockData pitchData)
+        {
+            selectedPitchIndex = pitchData.semitoneOffset;
+
+            var range = PianoRange.noteRanges[selectedPitchIndex];
+
+            // Read baseOctave from the PitchBlockData asset
+            selectedOctave = Mathf.Clamp(pitchData.baseOctave, range.min, range.max);
+
+            Debug.Log($"Selected pitch: {PitchName(selectedPitchIndex)}{selectedOctave}");
+        }
+        else
+        {
+            selectedPitchIndex = -1;
+        }
+
         Debug.Log("Selected block: " + blockToPlace.blockName);
     }
 
@@ -107,6 +135,12 @@ public class VoxelPlacer : MonoBehaviour
                     if (blockComp != null)
                         blockComp.data = blockToPlace;
 
+                    // If this is a pitch block, assign octave
+                    if (blockComp is PitchBlock pitchBlock)
+                    {
+                        pitchBlock.octave = selectedOctave; // assign runtime octave
+                    }
+
                     // Apply material
                     if (blockToPlace.material != null)
                     {
@@ -135,5 +169,25 @@ public class VoxelPlacer : MonoBehaviour
             lineRenderer.SetPosition(0, ray.origin);
             lineRenderer.SetPosition(1, endPoint);
         }
+    }
+
+    void AdjustOctave(float scroll)
+    {
+        if (selectedPitchIndex == -1) return;
+
+        var range = PianoRange.noteRanges[selectedPitchIndex];
+
+        if (scroll > 0) selectedOctave++;
+        if (scroll < 0) selectedOctave--;
+
+        selectedOctave = Mathf.Clamp(selectedOctave, range.min, range.max);
+
+        Debug.Log($"Octave changed: {PitchName(selectedPitchIndex)}{selectedOctave}");
+    }
+
+    string PitchName(int i)
+    {
+        string[] names = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        return names[i];
     }
 }
