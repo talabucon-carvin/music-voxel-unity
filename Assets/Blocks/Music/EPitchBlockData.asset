@@ -18,3 +18,4 @@ MonoBehaviour:
   hardness: 0
   lightEmission: 0
   semitoneOffset: 4
+  baseTone: {fileID: 8300000, guid: 397975e1a710eda4fa2c5377f0167e77, type: 3}
