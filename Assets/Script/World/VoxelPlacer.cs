@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,6 +20,12 @@ public class VoxelPlacer : MonoBehaviour
     public float maxRayDistance = 10f;
     public LayerMask placementMask;
 
+    [Header("Instrument Options")]
+    public InstrumentBlockData[] instrumentDatas;   // Piano, String, etc.
+    public GameObject[] instrumentPrefabs;          // Matching prefab for each instrument
+    private int selectedInstrumentIndex = 0;        // Current scroll-selected instrument
+    private bool instrumentModeActive = false;
+
     // Current selected pitch info (only used for pitch blocks)
     private int selectedPitchIndex = -1; // 0-11 (C..B)
     private int selectedOctave = 4;      // default
@@ -32,6 +39,21 @@ public class VoxelPlacer : MonoBehaviour
         if (scroll != 0 && selectedPitchIndex != -1)
         {
             AdjustOctave(scroll);
+        }
+
+        // Scroll instruments if in instrument mode
+        if (scroll != 0 && instrumentModeActive)
+        {
+            if (scroll > 0) selectedInstrumentIndex++;
+            if (scroll < 0) selectedInstrumentIndex--;
+
+            if (selectedInstrumentIndex >= instrumentDatas.Length) selectedInstrumentIndex = 0;
+            if (selectedInstrumentIndex < 0) selectedInstrumentIndex = instrumentDatas.Length - 1;
+
+            blockToPlace = instrumentDatas[selectedInstrumentIndex];
+            selectedBlockIndex = Array.IndexOf(blockPrefabs, instrumentPrefabs[selectedInstrumentIndex]);
+
+            Debug.Log($"Selected instrument: {blockToPlace.blockName}");
         }
 
         HandleHotkeys();
@@ -62,8 +84,21 @@ public class VoxelPlacer : MonoBehaviour
         if (Keyboard.current.minusKey.wasPressedThisFrame) SelectBlock(11);
         if (Keyboard.current.equalsKey.wasPressedThisFrame) SelectBlock(12);
 
-        // I key INSTRUMENT BLOCK
-        if (Keyboard.current.iKey.wasPressedThisFrame) SelectBlock(13);
+        if (Keyboard.current.iKey.wasPressedThisFrame)
+        {
+            // Optionally call SelectBlock if you want
+            // SelectBlock(13); // not strictly necessary here
+
+            // Activate instrument mode
+            instrumentModeActive = true;
+            selectedInstrumentIndex = 0; // start with first instrument
+
+            // Set block data and prefab to first instrument
+            blockToPlace = instrumentDatas[selectedInstrumentIndex];
+            selectedBlockIndex = System.Array.IndexOf(blockPrefabs, instrumentPrefabs[selectedInstrumentIndex]);
+
+            Debug.Log($"Instrument mode activated: {blockToPlace.blockName}");
+        }
 
         if (blockToPlace == null)
             blockToPlace = blockOptions[selectedBlockIndex];
@@ -127,7 +162,17 @@ public class VoxelPlacer : MonoBehaviour
             {
                 if (!Physics.CheckBox(spawnPos, Vector3.one * 0.45f, Quaternion.identity, placementMask))
                 {
-                    GameObject prefabToSpawn = blockPrefabs[selectedBlockIndex];
+                    GameObject prefabToSpawn;
+                    // Use instrument prefab if instrument mode is active
+                    if (instrumentModeActive && instrumentPrefabs.Length > 0)
+                    {
+                        prefabToSpawn = instrumentPrefabs[selectedInstrumentIndex];
+                    }
+                    else
+                    {
+                        prefabToSpawn = blockPrefabs[selectedBlockIndex];
+                    }
+
                     GameObject newBlock = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity, worldParent);
 
                     // Assign correct BlockData

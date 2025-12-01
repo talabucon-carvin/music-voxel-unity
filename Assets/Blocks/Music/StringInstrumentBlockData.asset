@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 696aa845e8cb9fa48a46b16aa330e40c, type: 3}
   m_Name: StringInstrumentBlockData
   m_EditorClassIdentifier: Assembly-CSharp::InstrumentBlockData
-  blockName: 
+  blockName: StringBlock
   material: {fileID: 0}
   isBreakable: 1
   hardness: 0
