@@ -126,4 +126,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InstrumentBlock
   data: {fileID: 11400000, guid: bc27fcc3e54b7f6429cee3ef48dd4293, type: 2}
   instrumentData: {fileID: 11400000, guid: bc27fcc3e54b7f6429cee3ef48dd4293, type: 2}
-  audioSource: {fileID: 0}

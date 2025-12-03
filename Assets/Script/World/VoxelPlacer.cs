@@ -96,27 +96,27 @@ public class VoxelPlacer : MonoBehaviour
 
         // Number hotkeys 1–0  0–9
         // Number keys 1–0 map to pitch blocks 0–9
-        if (Keyboard.current.digit1Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(0); }
-        if (Keyboard.current.digit2Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(1); }
-        if (Keyboard.current.digit3Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(2); }
-        if (Keyboard.current.digit4Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(3); }
-        if (Keyboard.current.digit5Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(4); }
-        if (Keyboard.current.digit6Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(5); }
-        if (Keyboard.current.digit7Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(6); }
-        if (Keyboard.current.digit8Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(7); }
-        if (Keyboard.current.digit9Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(8); }
-        if (Keyboard.current.digit0Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(9); }
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(1); }
+        if (Keyboard.current.digit2Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(2); }
+        if (Keyboard.current.digit3Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(3); }
+        if (Keyboard.current.digit4Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(4); }
+        if (Keyboard.current.digit5Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(5); }
+        if (Keyboard.current.digit6Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(6); }
+        if (Keyboard.current.digit7Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(7); }
+        if (Keyboard.current.digit8Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(8); }
+        if (Keyboard.current.digit9Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(9); }
+        if (Keyboard.current.digit0Key.wasPressedThisFrame) { instrumentModeActive = false; SelectBlock(10); }
 
         // Minus and equals
         if (Keyboard.current.minusKey.wasPressedThisFrame)
         {
             instrumentModeActive = false;
-            SelectBlock(10);
+            SelectBlock(11);
         }
         if (Keyboard.current.equalsKey.wasPressedThisFrame)
         {
             instrumentModeActive = false;
-            SelectBlock(11);
+            SelectBlock(12);
         }
 
 
@@ -134,6 +134,24 @@ public class VoxelPlacer : MonoBehaviour
 
         if (blockToPlace == null && blockOptions.Length > 0)
             blockToPlace = blockOptions[selectedBlockIndex];
+
+        // Press P to play the column you're standing on
+        if (Keyboard.current.pKey.wasPressedThisFrame)
+        {
+            Vector2 crossPos = crosshair
+                ? crosshair.GetCrosshairScreenPos()
+                : new Vector2(Screen.width / 2f, Screen.height / 2f);
+
+            Ray ray = playerCamera.ScreenPointToRay(crossPos);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, placementMask))
+            {
+                Vector3Int target = Vector3Int.RoundToInt(hit.collider.transform.position);
+                PlayColumnAt(target);
+                Debug.Log($"Played aimed column at {target}");
+            }
+        }
+
     }
 
     void SelectBlock(int index)
@@ -150,7 +168,7 @@ public class VoxelPlacer : MonoBehaviour
             var range = PianoRange.noteRanges[selectedPitchIndex];
             selectedOctave = Mathf.Clamp(selectedOctave, range.min, range.max);
 
-            Debug.Log($"Selected pitch: {PitchName(selectedPitchIndex)}{selectedOctave}");
+            Debug.Log($"Selected block: {PitchName(selectedPitchIndex)}{selectedOctave} at frame {Time.frameCount}");
         }
         else
         {
@@ -172,6 +190,7 @@ public class VoxelPlacer : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, placementMask))
         {
             Vector3Int cell = Vector3Int.RoundToInt(hit.point + hit.normal * 0.5f);
+            Debug.Log($"Cell: {cell}");   // <-- add this
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
                 PlaceBlock(cell);
@@ -280,25 +299,8 @@ public class VoxelPlacer : MonoBehaviour
         lastBlockBelow = blockBelow;
         Vector3Int startPos = Vector3Int.RoundToInt(blockBelow.transform.position);
 
-        var stacks = ScanFullColumn(startPos);
-
-        foreach (var stack in stacks)
-        {
-            if (stack.instrument != null && stack.pitches.Count > 0)
-            {
-                foreach (var p in stack.pitches)
-                    p.PlayWithInstrument(stack.instrument, 1f);
-            }
-            else if (stack.instrument != null && stack.pitches.Count == 0)
-            {
-                stack.instrument.PlayBaseNote(1f);
-            }
-            else if (stack.instrument == null && stack.pitches.Count > 0)
-            {
-                foreach (var p in stack.pitches)
-                    p.PlayNote(1f);
-            }
-        }
+        // Simply call the new general-purpose method
+        PlayColumnAt(startPos);
     }
 
 
@@ -422,6 +424,52 @@ public class VoxelPlacer : MonoBehaviour
             scan += Vector3Int.down;
         }
     }
+
+    // Plays all pitch/instrument stacks at a given position (top-to-bottom scan)
+    public void PlayColumnAt(Vector3Int startPos)
+    {
+        var stacks = ScanFullColumn(startPos);
+
+        foreach (var stack in stacks)
+        {
+
+            Debug.Log("Instrument=" + stack.instrument +
+            " pitchCount=" + stack.pitches.Count);
+
+            if (stack.instrument != null && stack.pitches.Count > 0)
+            {
+                foreach (var p in stack.pitches)
+                {
+                    Debug.Log("Pitch at height " + p.transform.position.y);
+                    p.PlayWithInstrument(stack.instrument, 1f);
+                }
+            }
+            else if (stack.instrument != null && stack.pitches.Count == 0)
+            {
+                stack.instrument.PlayBaseNote(1f);
+            }
+            else if (stack.instrument == null && stack.pitches.Count > 0)
+            {
+                foreach (var p in stack.pitches)
+                {
+                    Debug.Log("Pitch at height " + p.transform.position.y);
+
+                    p.PlayNote(1f);
+                }
+            }
+        }
+    }
+
+    public void PlayRowPerpendicular(Vector3Int startPos, Vector3Int direction, int length)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            Vector3Int pos = startPos + direction * i;
+            PlayColumnAt(pos);
+        }
+    }
+
+
 
     // -------------------------------------------------------
     // OCTAVE
