@@ -40,6 +40,8 @@ public class VoxelPlacer : MonoBehaviour
 
     public static Dictionary<Vector3Int, Block> worldGrid = new();
 
+    public static VoxelPlacer Instance; // <- add this
+
     void Awake()
     {
         if (blockOptions.Length > 0)
@@ -491,4 +493,52 @@ public class VoxelPlacer : MonoBehaviour
         string[] names = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
         return (i >= 0 && i < names.Length) ? names[i] : "?";
     }
+
+    // Spawn a pitch block (C-B 12 prefabs)
+    public PitchBlock SpawnPitchBlock(PitchBlockData data, Vector3 position, Transform parent = null)
+    {
+        int index = System.Array.IndexOf(blockOptions, data); // blockOptions contains all pitch block data
+        if (index < 0 || index >= blockPrefabs.Length) return null;
+
+        GameObject go = Instantiate(blockPrefabs[index], position, Quaternion.identity, parent);
+        PitchBlock pb = go.GetComponent<PitchBlock>();
+        if (pb != null)
+        {
+            pb.data = data;
+            // Optional: assign material
+            if (data.material != null)
+            {
+                MeshRenderer rend = go.GetComponent<MeshRenderer>();
+                if (rend) rend.material = data.material;
+            }
+        }
+
+        VoxelPlacer.worldGrid[Vector3Int.RoundToInt(position)] = pb;
+        return pb;
+    }
+
+    // Spawn an instrument block (piano, string, etc.)
+    public InstrumentBlock SpawnInstrumentBlock(InstrumentBlockData data, Vector3 position, Transform parent = null)
+    {
+        int index = System.Array.IndexOf(instrumentDatas, data);
+        if (index < 0 || index >= instrumentPrefabs.Length) return null;
+
+        GameObject go = Instantiate(instrumentPrefabs[index], position, Quaternion.identity, parent);
+        InstrumentBlock inst = go.GetComponent<InstrumentBlock>();
+        if (inst != null)
+        {
+            inst.data = data;
+            if (data.material != null)
+            {
+                MeshRenderer rend = go.GetComponent<MeshRenderer>();
+                if (rend) rend.material = data.material;
+            }
+        }
+
+        VoxelPlacer.worldGrid[Vector3Int.RoundToInt(position)] = inst;
+        return inst;
+    }
+
+
+
 }
