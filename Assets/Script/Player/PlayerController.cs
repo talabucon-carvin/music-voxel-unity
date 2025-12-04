@@ -10,6 +10,10 @@ public class PlayerController : MonoBehaviour
     public float gravity = -9.81f;
     public Transform cameraTransform;
 
+    // Rail system lock
+    public bool railLocked = false;
+    public bool IsRailLocked => railLocked;
+
     private Vector2 moveInput;
     private PlayerControls controls;
 
@@ -45,23 +49,26 @@ public class PlayerController : MonoBehaviour
         }
 
         // Movement
-        Vector3 forward = cameraTransform.forward;
-        forward.y = 0;
-        forward.Normalize();
-
-        Vector3 right = cameraTransform.right;
-        right.y = 0;
-        right.Normalize();
-
-        Vector3 move = forward * moveInput.y + right * moveInput.x;
-
-        if (move.sqrMagnitude > 0.01f)
+        if (!railLocked)
         {
-            // rotate player toward movement
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(move), 0.15f);
-        }
+            Vector3 forward = cameraTransform.forward;
+            forward.y = 0;
+            forward.Normalize();
 
-        controller.Move(move * speed * Time.deltaTime);
+            Vector3 right = cameraTransform.right;
+            right.y = 0;
+            right.Normalize();
+
+            Vector3 move = forward * moveInput.y + right * moveInput.x;
+
+            if (move.sqrMagnitude > 0.01f)
+            {
+                // rotate player toward movement
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(move), 0.15f);
+            }
+
+            controller.Move(move * speed * Time.deltaTime);
+        }
 
         // Apply gravity
         velocity.y += gravity * Time.deltaTime;
@@ -70,9 +77,18 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
+        if (railLocked)
+            return;
+
         if (isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
+
+    public void ResetVerticalVelocity()
+    {
+        velocity.y = 0f;
+    }
+
 }
